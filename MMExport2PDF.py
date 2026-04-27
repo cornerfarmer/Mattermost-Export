@@ -25,7 +25,7 @@ import sys
 import os
 from pathlib import Path
 
-#import traceback
+import traceback
 
 #########################
 ## Thirdparty Imports
@@ -183,7 +183,7 @@ def main():
         userInfo = getUserFromName(options.user)
         teamInfo = getTeam(options.team)
 
-        baseUserPath = os.path.join( options.output, options.user )
+        baseUserPath = os.path.join( options.output, options.user, options.team )
         baseUserFilePath = os.path.join( baseUserPath, 'files/' )
 
         os.makedirs( baseUserPath, 0o755, True)
@@ -423,11 +423,11 @@ def main():
 
                             except ImageException as ie:
                                 print( f'Embed Image error: {ie}' )
-                                #traceback.print_exc()
+                                traceback.print_exc()
                             except Exception as e:
                                 print('Embed Image error: Couldn\'t add picture to PDF')
                                 print( e )
-                                #traceback.print_exc()
+                                traceback.print_exc()
 
                     except ImageException as ie:
                         print( ie )
@@ -439,7 +439,7 @@ def main():
 
                         for aFile in message["files"]:
                             try:
-                                filePath = os.path.join( userAttachmentsFilePath, f'{aFile["id"]}_{aFile["name"]}' )
+                                filePath = os.path.join( userAttachmentsFilePath, f'{aFile["id"]}_{handleUnicode(aFile["name"])}' )
                                 myFile = Path(filePath)
 
                                 if not myFile.exists():
@@ -450,18 +450,18 @@ def main():
                                         shutil.copyfileobj(fileObj.raw, f)
                                                                 
                                 if myFile.is_file():                                    
-                                    pdf.embed_file( myFile, desc=aFile["name"], compress=True)
+                                    pdf.embed_file( myFile, desc=handleUnicode(aFile["name"]), compress=True)
                                     pdf.cell(30, 5, 'Attached file: ', 0, align='L', fill=True)
                                     pdf.set_text_color(0, 0, 255)
-                                    pdf.cell(0, 5, f'{aFile["id"]}_{aFile["name"]}', 0, align='L', fill=True)
+                                    pdf.cell(0, 5, handleUnicode(f'{aFile["id"]}_{aFile["name"]}'), 0, align='L', fill=True)
                                     
                             except FileException as fe:
                                 print( f'Embed File error: {fe}' )
-                                #traceback.print_exc()
+                                traceback.print_exc()
                             except Exception as e:
                                 print('Embed File error: Couldn\'t add file to PDF')
                                 print( e )
-                                #traceback.print_exc()
+                                traceback.print_exc()
                             finally:
                                 pdf.set_text_color(0, 0, 0)
                                 pdf.ln()
@@ -481,7 +481,7 @@ def main():
 
     except Exception as e:
         print( e )
-        #traceback.print_exc()
+        traceback.print_exc()
 
 
 
@@ -720,10 +720,10 @@ class PDF(FPDF):
 
         SYSTEM_TTFONTS = '/usr/share/fonts/truetype'
 
-        self.add_font("NotoSans", style="", fname=os.path.join(SYSTEM_TTFONTS, "noto/NotoSans-Regular.ttf"))
-        self.add_font("NotoSans", style="B", fname=os.path.join(SYSTEM_TTFONTS, "noto/NotoSans-Bold.ttf"))
-        self.add_font("NotoSans", style="I", fname=os.path.join(SYSTEM_TTFONTS, "noto/NotoSans-Italic.ttf"))
-        self.add_font("NotoSans", style="BI", fname=os.path.join(SYSTEM_TTFONTS, "noto/NotoSans-BoldItalic.ttf"))
+        self.add_font("NotoSans", style="", fname=os.path.join(SYSTEM_TTFONTS, "NotoSans-Regular.ttf"))
+        self.add_font("NotoSans", style="B", fname=os.path.join(SYSTEM_TTFONTS, "NotoSans-Bold.ttf"))
+        self.add_font("NotoSans", style="I", fname=os.path.join(SYSTEM_TTFONTS, "NotoSans-Italic.ttf"))
+        self.add_font("NotoSans", style="BI", fname=os.path.join(SYSTEM_TTFONTS, "NotoSans-BoldItalic.ttf"))
         self.set_font('NotoSans', '', 10)
 
         self.set_section_title_styles(
